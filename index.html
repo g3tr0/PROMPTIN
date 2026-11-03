@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniGlyph</title>
+
+  <!-- Font JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- Top Full-Width Navbar (Centered Neobrutalist Classic) -->
+  <nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-target="tabCatalog" id="navCatalogBtn" role="tab">Characters</button>
+      <button class="tab-btn" data-target="tabEncodings" id="navEncodingsBtn" role="tab">Encodings</button>
+      <button class="tab-btn" data-target="tabTranslator" id="navTranslatorBtn" role="tab">Translator</button>
+      <button class="tab-btn" data-target="tabAnalyzer" id="navAnalyzerBtn" role="tab">Analyzer</button>
+      <button class="tab-btn" data-target="tabZalgo" id="navZalgoBtn" role="tab">Zalgo</button>
+      <button class="tab-btn" data-target="tabEmotes" id="navEmotesBtn" role="tab">Emotes</button>
+      <button class="tab-btn" data-target="tabPrompt" id="navPromptBtn" role="tab">Prompt</button>
+    </div>
+
+    <!-- Theme Toggle SVG Button -->
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">
+      <svg id="themeIconSun" class="theme-icon-svg" style="display:none;" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </svg>
+      <svg id="themeIconMoon" class="theme-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Main Content (Input fields are always first) -->
+  <main>
+    <!-- ==========================================
+         SECTION 1: CHARACTERS
+         ========================================== -->
+    <section id="tabCatalog" class="tab-content active" role="tabpanel">
+      <!-- Search and Category Filter right at the top -->
+      <div class="catalog-toolbar">
+        <div class="search-field-wrapper">
+          <input type="text" id="searchInput" class="neo-input"
+            placeholder="Search character, name or code (e.g. interrobang, u+25b6, rune, alpha, bold a)..."
+            autocomplete="off" spellcheck="false">
+          <button id="searchClearBtn" class="clear-search-btn">Clear</button>
+        </div>
+
+        <!-- Custom Category Dropdown -->
+        <div class="custom-select-wrapper" id="catDropdownWrapper">
+          <div class="custom-select-trigger" id="catDropdownTrigger">
+            <span id="catSelectedLabel">All Characters</span>
+            <span class="arrow">▾</span>
+          </div>
+          <div class="custom-select-options" id="catOptionsContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar-row">
+        <span id="resultsCount">Loading...</span>
+        <button id="copyCategoryBtn" class="neo-btn neo-btn-mini">Copy Current Category</button>
+      </div>
+
+      <div class="glyphs-grid" id="glyphsGrid">
+        <!-- Glyphs Grid -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 2: ENCODINGS (REVERSE DECODER ON TOP)
+         ========================================== -->
+    <section id="tabEncodings" class="tab-content" role="tabpanel">
+      <!-- Symmetrical Reverse Decoder (Positioned at the Top) -->
+      <div class="decoder-block" style="margin-bottom: 2rem;">
+        <div
+          style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:0.85rem; font-weight:700;">Codec:</span>
+            <button id="codecModeEncodeBtn" class="neo-btn neo-btn-mini">Encode</button>
+            <button id="codecModeDecodeBtn" class="neo-btn neo-btn-mini neo-btn-primary">Decode</button>
+          </div>
+          <div class="custom-select-wrapper" id="decoderTypeWrapper" style="min-width: 220px;">
+            <div class="custom-select-trigger" id="decoderTypeTrigger">
+              <span id="decoderTypeLabel">Base64</span>
+              <span class="arrow">▾</span>
+            </div>
+            <div class="custom-select-options" id="decoderTypeOptions">
+              <div class="custom-option selected" data-value="base64">Base64</div>
+              <div class="custom-option" data-value="base32">Base32</div>
+              <div class="custom-option" data-value="hex">Hexadecimal</div>
+              <div class="custom-option" data-value="binary">Binary (8-bit)</div>
+              <div class="custom-option" data-value="ascii">ASCII Decimal Numbers</div>
+              <div class="custom-option" data-value="url">URL Percent-Encoding</div>
+              <div class="custom-option" data-value="html">HTML Entities</div>
+              <div class="custom-option" data-value="unicode">Unicode Escape (\uXXXX)</div>
+              <div class="custom-option" data-value="morse">Morse Code</div>
+              <div class="custom-option" data-value="rot13">ROT13 Cipher</div>
+              <div class="custom-option" data-value="rot47">ROT47 Cipher</div>
+              <div class="custom-option" data-value="atbash">Atbash Cipher</div>
+              <div class="custom-option" data-value="reverse">Reverse Text</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="symmetrical-columns">
+          <div class="symmetrical-pane">
+            <span class="pane-label" id="codecInputLabel">Encoded Input:</span>
+            <textarea id="decoderInput" class="neo-textarea" style="flex:1; min-height:140px;"
+              placeholder="Paste encoded data here..."></textarea>
+          </div>
+          <div class="symmetrical-pane">
+            <span class="pane-label" id="codecOutputLabel">Decoded Plain Text:</span>
+            <textarea id="decoderOutput" class="neo-textarea" style="flex:1; min-height:140px;" readonly
+              placeholder="Decoded output will appear here..."></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:1rem; display:flex; justify-content:flex-end;">
+          <button id="decoderCopyBtn" class="neo-btn neo-btn-primary">Copy Output</button>
+        </div>
+      </div>
+
+      <!-- Universal Multi-Encoding Output -->
+      <div style="margin-bottom: 1.25rem;">
+        <span class="pane-label">Multi-Format Plain Text Encoder:</span>
+        <input type="text" id="encodingInput" class="neo-input" placeholder="Enter text or characters to encode..."
+          autocomplete="off">
+      </div>
+
+      <div class="encodings-grid" id="encodingsGrid">
+        <!-- Encoding cards generated via JS -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 3: TRANSLATOR (SYMMETRICAL, NO LISTEN BUTTON)
+         ========================================== -->
+    <section id="tabTranslator" class="tab-content" role="tabpanel">
+      <div class="translator-container">
+        <!-- Input fields right at the top -->
+        <div class="symmetrical-columns">
+          <!-- Left: Source -->
+          <div class="translate-box">
+            <div class="translate-toolbar-top">
+              <div class="custom-select-wrapper" id="transFromDropdownWrapper">
+                <div class="custom-select-trigger" id="transFromTrigger">
+                  <span id="transFromLabel">Auto Detect</span>
+                  <span class="arrow">▾</span>
+                </div>
+                <div class="custom-select-options" id="transFromOptions">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+              <button id="transSwapBtn" class="neo-btn neo-btn-mini" title="Swap Languages">Swap</button>
+            </div>
+
+            <textarea id="transFromText" class="translate-textarea-clean"
+              placeholder="Enter text to translate..."></textarea>
+
+            <div class="translate-toolbar-bottom">
+              <button id="transClearFromBtn" class="neo-btn neo-btn-mini">Clear</button>
+              <span id="transCharCount" style="font-size:0.75rem; color:var(--text-secondary);">0 characters</span>
+            </div>
+          </div>
+
+          <!-- Right: Destination -->
+          <div class="translate-box">
+            <div class="translate-toolbar-top">
+              <div class="custom-select-wrapper" id="transToDropdownWrapper">
+                <div class="custom-select-trigger" id="transToTrigger">
+                  <span id="transToLabel">Spanish</span>
+                  <span class="arrow">▾</span>
+                </div>
+                <div class="custom-select-options" id="transToOptions">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+              <span id="transStatus" style="font-size:0.75rem; color:var(--text-secondary);">Ready</span>
+            </div>
+
+            <textarea id="transToText" class="translate-textarea-clean" readonly
+              placeholder="Translation will appear here..."></textarea>
+
+            <div class="translate-toolbar-bottom">
+              <button id="transCopyToBtn" class="neo-btn neo-btn-primary neo-btn-mini">Copy</button>
+              <span style="font-size:0.75rem; color:var(--text-secondary);">Instant</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 4: ANALYZER (100% SYMMETRICAL)
+         ========================================== -->
+    <section id="tabAnalyzer" class="tab-content" role="tabpanel">
+      <div class="analyzer-symmetrical-grid">
+        <!-- Left: Input Area -->
+        <div class="analyzer-card">
+          <span class="pane-label">Text For Inspection:</span>
+          <textarea id="analyzerInput" class="neo-textarea"
+            style="flex:1; min-height:360px; height:100%; border:none; box-shadow:none; padding:0;"
+            placeholder="Type or paste text here..."></textarea>
+        </div>
+
+        <!-- Right: Metrics & Breakdown List with exact matching height -->
+        <div class="analyzer-card">
+          <span class="pane-label">Metrics:</span>
+          <div class="stats-grid-symmetrical">
+            <div class="stat-cell">
+              <div class="stat-val" id="statChars">0</div>
+              <div class="stat-lbl">Characters</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="statBytes">0</div>
+              <div class="stat-lbl">UTF-8 Bytes</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="statLines">0</div>
+              <div class="stat-lbl">Lines</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="statWords">0</div>
+              <div class="stat-lbl">Words</div>
+            </div>
+          </div>
+
+          <span class="pane-label">Unique Character Breakdown:</span>
+          <div class="breakdown-list-symmetrical" id="glyphBreakdownList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 5: ZALGO
+         ========================================== -->
+    <section id="tabZalgo" class="tab-content" role="tabpanel">
+      <div class="zalgo-card">
+        <!-- Input field right at the top -->
+        <div style="margin-bottom:1.25rem;">
+          <span class="pane-label">Base Input Text:</span>
+          <input type="text" id="zalgoInput" class="neo-input" placeholder="Type text here...">
+        </div>
+
+        <div class="slider-group-symmetrical">
+          <div class="slider-cell">
+            <div class="slider-meta">
+              <span>Upward:</span>
+              <span id="zalgoUpVal">4</span>
+            </div>
+            <input type="range" id="zalgoUp" class="neo-range" min="0" max="15" value="4">
+          </div>
+
+          <div class="slider-cell">
+            <div class="slider-meta">
+              <span>Middle:</span>
+              <span id="zalgoMidVal">2</span>
+            </div>
+            <input type="range" id="zalgoMid" class="neo-range" min="0" max="8" value="2">
+          </div>
+
+          <div class="slider-cell">
+            <div class="slider-meta">
+              <span>Downward:</span>
+              <span id="zalgoDownVal">4</span>
+            </div>
+            <input type="range" id="zalgoDown" class="neo-range" min="0" max="15" value="4">
+          </div>
+        </div>
+
+        <div class="zalgo-preview-screen" id="zalgoPreview">
+          <!-- Zalgo Preview -->
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <button id="zalgoChaosBtn" class="neo-btn">Random Chaos</button>
+          <button id="zalgoCopyBtn" class="neo-btn neo-btn-primary">Copy Zalgo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 6: EMOTES (MOBILE EMOJIS & KAOMOJI)
+         ========================================== -->
+    <section id="tabEmotes" class="tab-content" role="tabpanel">
+      <!-- Quick Type Filter Buttons (All / Mobile Emojis / Kaomojis) -->
+      <div class="emote-type-bar" id="emoteTypeBar" role="tablist">
+        <button class="emote-type-btn active" data-type="all">All</button>
+        <button class="emote-type-btn" data-type="emoji">Mobile Emojis</button>
+        <button class="emote-type-btn" data-type="kaomoji">Kaomojis</button>
+      </div>
+
+      <!-- Search and Category Filter at the top -->
+      <div class="catalog-toolbar">
+        <div class="search-field-wrapper">
+          <input type="text" id="emoteSearchInput" class="neo-input"
+            placeholder="Search emojis or kaomojis (e.g. laugh, cat, fire, heart)..." autocomplete="off"
+            spellcheck="false">
+          <button id="emoteSearchClearBtn" class="clear-search-btn">Clear</button>
+        </div>
+
+        <!-- Custom Emote Category Dropdown -->
+        <div class="custom-select-wrapper" id="emoteCatDropdownWrapper">
+          <div class="custom-select-trigger" id="emoteCatDropdownTrigger">
+            <span id="emoteCatSelectedLabel">All Emotes & Emojis</span>
+            <span class="arrow">▾</span>
+          </div>
+          <div class="custom-select-options" id="emoteCatOptionsContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar-row">
+        <span id="emoteResultsCount">Loading emotes...</span>
+        <span style="font-size:0.75rem; color:var(--text-secondary);">Click any emoji to copy</span>
+      </div>
+
+      <div class="emotes-grid" id="emotesGrid">
+        <!-- Emotes generated via JS -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 7: PROMPT (SIMILAR CHAR MUTATOR)
+         ========================================== -->
+    <section id="tabPrompt" class="tab-content" role="tabpanel">
+      <!-- Input fields right at the top (Symmetrical) -->
+      <div class="symmetrical-columns" style="margin-bottom:1.5rem;">
+        <!-- Left: Input -->
+        <div class="translate-box">
+          <div class="translate-toolbar-top">
+            <span style="font-size:0.85rem; font-weight:700;">Original Prompt (Input):</span>
+          </div>
+
+          <textarea id="promptInput" class="translate-textarea-clean"
+            placeholder="Enter prompt text to analyze and replace with similar special characters..."></textarea>
+
+          <div class="translate-toolbar-bottom">
+            <button id="promptClearBtn" class="neo-btn neo-btn-mini">Clear</button>
+            <span id="promptInputCount" style="font-size:0.75rem; color:var(--text-secondary);">0 characters</span>
+          </div>
+        </div>
+
+        <!-- Right: Output -->
+        <div class="translate-box">
+          <div class="translate-toolbar-top">
+            <span style="font-size:0.85rem; font-weight:700;">Mutated Output:</span>
+            <span id="promptStatus" style="font-size:0.75rem; color:var(--text-secondary);">Real-Time</span>
+          </div>
+
+          <textarea id="promptOutput" class="translate-textarea-clean" readonly
+            placeholder="Mutated text with similar glyphs will appear here..."></textarea>
+
+          <div class="translate-toolbar-bottom">
+            <button id="promptCopyBtn" class="neo-btn neo-btn-primary neo-btn-mini">Copy Prompt</button>
+            <span id="promptOutputCount" style="font-size:0.75rem; color:var(--text-secondary);">0 characters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Minimalist Intensity Slider -->
+      <div class="prompt-control-card">
+        <div class="prompt-slider-wrap">
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; font-size:0.85rem; font-weight:700;">
+            <span>Intensity:</span>
+            <span id="promptSliderVal" style="color:var(--accent);">50%</span>
+          </div>
+          <input type="range" id="promptSlider" class="neo-range" min="0" max="100" value="50">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Minimalist Character Modal -->
+  <div class="modal-overlay" id="glyphModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+
+      <div class="modal-hero">
+        <div class="modal-char" id="modalChar">✦</div>
+        <div class="modal-title" id="modalTitle">Character Name</div>
+        <div id="modalCategory" style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">Category
+        </div>
+      </div>
+
+      <div class="modal-meta-list">
+        <div class="modal-meta-item">
+          <span>Unicode:</span>
+          <div>
+            <span id="modalCodePoint" style="margin-right:0.5rem;">U+2726</span>
+            <button class="neo-btn neo-btn-mini"
+              onclick="copyToClipboard(document.getElementById('modalCodePoint').textContent, 'Code copied')">Copy</button>
+          </div>
+        </div>
+
+        <div class="modal-meta-item">
+          <span>HTML Hex:</span>
+          <div>
+            <span id="modalHtmlHex" style="margin-right:0.5rem;">&#x2726;</span>
+            <button class="neo-btn neo-btn-mini"
+              onclick="copyToClipboard(document.getElementById('modalHtmlHex').textContent, 'HTML Hex copied')">Copy</button>
+          </div>
+        </div>
+
+        <div class="modal-meta-item">
+          <span>HTML Dec:</span>
+          <div>
+            <span id="modalHtmlDec" style="margin-right:0.5rem;">&#10022;</span>
+            <button class="neo-btn neo-btn-mini"
+              onclick="copyToClipboard(document.getElementById('modalHtmlDec').textContent, 'HTML Dec copied')">Copy</button>
+          </div>
+        </div>
+
+        <div class="modal-meta-item">
+          <span>UTF-8 Bytes:</span>
+          <div>
+            <span id="modalUtf8" style="margin-right:0.5rem; font-size:0.72rem;">0xE2 0x9C 0xA6</span>
+            <button class="neo-btn neo-btn-mini"
+              onclick="copyToClipboard(document.getElementById('modalUtf8').textContent, 'Bytes copied')">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.5rem;">
+        <button id="modalFavBtn" class="neo-btn" style="flex:1;">Favorite</button>
+        <button id="modalCopyCharBtn" class="neo-btn neo-btn-primary" style="flex:1;">Copy Character</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <footer>
+    <span>OmniGlyph</span>
+    <span style="color:var(--text-secondary);">UTF-8 Standard</span>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="emotes.js"></script>
+  <script src="prompt-mutator.js"></script>
+  <script src="encodings.js"></script>
+  <script src="translator.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
